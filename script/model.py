@@ -24,7 +24,7 @@ class AcessDB:
         except:
             return 0
 
-    def selectDeputados(id):
+    def selectDep(id):
         try:
             session = DAO.getSession()
             session.expire_on_commit = False
@@ -41,6 +41,32 @@ class API:
 
     def getDeputados(self):
         try:
-            return requests.get('https://dadosabertos.camara.leg.br/api/v2/deputados?pagina=2')
+            deputados_json = json.loads(requests.get('https://dadosabertos.camara.leg.br/api/v2/deputados?pagina=1').text)
+
+            if len(deputados_json) == 0:
+                raise Exception('Returned json is empty')
+
+            print('Fazendo a carga dos Deputados no banco...')
         except Exception as e:
             return '\nERRO: ' + repr(e)
+
+        for dep in deputados_json["dados"]:
+            depObject = Deputados(id=int(dep['id']),
+                                    nome=str(dep['nome']),
+                                    siglapartido=str(dep['siglaPartido']),
+                                    siglauf=str(dep['siglaUf']),
+                                    idlegislatura=dep['idLegislatura'],
+                                )
+            #Verifica se o objeto já existe no banco
+            check = self.manipulateDB.selectDep(depObject.id)
+            id = str(depObject.id)
+            nome = str(depObject.nome)
+            #Se não existir, insere no banco
+            if not check:
+                self.manipulateDB.insert(depObject)
+                print('Deputado inserido no banco. ID: ' + id + ' Nome: ' + nome)
+            else:
+                print('Deputado já existe no banco. ID: ' + id + ' Nome: ' + nome)
+                
+        return 1
+
