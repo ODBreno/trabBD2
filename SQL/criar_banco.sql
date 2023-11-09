@@ -37,7 +37,9 @@ CREATE TABLE eventos (
 	descricao text NOT NULL,
 	localExterno text,
 	localCamara camara,
-	nomePublicacao text NOT NULL
+	nomePublicacao text NOT NULL,
+	id_orgao int NOT NULL,
+	FOREIGN KEY (id_orgao) REFERENCES orgaos(id)
 )
 
 CREATE TABLE licitacao (
