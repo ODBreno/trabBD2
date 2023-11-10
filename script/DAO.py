@@ -18,3 +18,9 @@ class DAODeputados():
     def select(session, id):
         dep = session.query(Deputados).filter(Deputados.id == id).first()
         return dep
+
+class DAOOrgaos():
+    
+    def select(session, id):
+        dep = session.query(Orgaos).filter(Orgaos.id == id).first()
+        return dep
