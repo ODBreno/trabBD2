@@ -22,6 +22,7 @@ class AcessDB:
             session.close()
             return 1
         except:
+            session.close()
             return 0
 
     def selectDep(id):
@@ -30,9 +31,10 @@ class AcessDB:
             session.expire_on_commit = False
             dep = DAODeputados.select(session, id)
             session.commit()
-            session.close()
+
             return dep
         except:
+
             return 0
         
     def selectOrg(id):
@@ -41,9 +43,9 @@ class AcessDB:
             session.expire_on_commit = False
             org = DAOOrgaos.select(session, id)
             session.commit()
-            session.close()
             return org
         except:
+ 
             return 0
     
 class API:
@@ -72,9 +74,9 @@ class API:
                     #Se não existir, insere no banco
                     if not check:
                         self.manipulateDB.insert(depObject)
-                        print('Deputado inserido no banco. ID: ' + id + ' Nome: ' + nome)
-                    else:
-                        print('Deputado já existe no banco. ID: ' + id + ' Nome: ' + nome)
+                    #     print('Deputado inserido no banco. ID: ' + id + ' Nome: ' + nome)
+                    # else:
+                    #     print('Deputado já existe no banco. ID: ' + id + ' Nome: ' + nome)
                 i+= 1
             return 1
         except Exception as e:
@@ -89,6 +91,7 @@ class API:
                 if len(orgaos_json) == 0:
                     raise Exception('Returned json is empty')
                 for org in orgaos_json["dados"]:
+                    lista_existentes = []
                     orgObject = Orgaos(id=int(org['id']),
                                             sigla=str(org['sigla']),
                                             nome=str(org['nome']),
@@ -104,16 +107,16 @@ class API:
                     #Se não existir, insere no banco
                     if not check:
                         # Consultando os membros de cada orgão
-                        membros_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/orgaos/{org["id"]}/membros').text)
+                        membros_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/orgaos/{org["id"]}/membros?itens=1000').text)
                         for membro in membros_json["dados"]:
                             depObject = self.manipulateDB.selectDep(membro["id"])
-                            if depObject:
+                            if depObject and depObject.id not in lista_existentes:
+                                lista_existentes.append(depObject.id)
                                 orgObject.deputados.append(depObject)
                         self.manipulateDB.insert(orgObject)
                         print('Orgão inserido no banco. ID: ' + id + ' Apelido: ' + apelido)
                     else:
                         print('Orgão já existe no banco. ID: ' + id + ' Apelido: ' + apelido)
-                    
                 i+= 1
             return 1
         except Exception as e:
