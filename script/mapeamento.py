@@ -20,6 +20,7 @@ class Evento(Base):
     localexterno = Column(Text)
     localcamara = Column(Text)
 
+    deputados = relationship('Deputados', secondary='public.evento_deputado', back_populates='evento')
     orgaos = relationship('Orgaos', secondary='public.evento_orgao', back_populates='evento')
 
 
@@ -48,7 +49,7 @@ class Orgaos(Base):
     sigla = Column(Text, nullable=False)
     nome = Column(Text, nullable=False)
     apelido = Column(Text, nullable=False)
-    codtipoorgao = Column(SmallInteger, nullable=False)
+    codtipoorgao = Column(Integer, nullable=False)
     tipoorgao = Column(Text, nullable=False)
     nomepublicacao = Column(Text, nullable=False)
 
@@ -70,6 +71,7 @@ class Deputados(Base):
     siglauf = Column(String(2), nullable=False)
     idlegislatura = Column(SmallInteger, nullable=False)
 
+    evento = relationship('Evento', secondary='public.evento_deputado', back_populates='deputados')
     legislatura = relationship('Legislatura', back_populates='deputados')
     orgaos = relationship('Orgaos', secondary='public.deputado_orgao', back_populates='deputados')
     despesas = relationship('Despesas', back_populates='deputados')
@@ -80,6 +82,7 @@ t_evento_deputado = Table(
     Column('id_evento', Integer, nullable=False),
     Column('id_deputado', Integer, nullable=False),
     ForeignKeyConstraint(['id_evento'], ['public.evento.id'], name='evento_deputado_id_evento_fkey'),
+    ForeignKeyConstraint(['id_deputado'], ['public.deputados.id'], name='evento_deputado_id_deputado_fkey'),
     schema='public'
 )
 

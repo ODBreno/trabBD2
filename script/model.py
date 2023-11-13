@@ -124,7 +124,7 @@ class API:
                     id = str(depObject.id)
                     nome = str(depObject.nome)
                     if not check:
-                        despesas_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/deputados/{depObject.id}/despesas?idLegislatura={depObject.idlegislatura}&ordem=ASC&ordenarPor=ano').text)
+                        despesas_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/deputados/{depObject.id}/despesas?itens=100&idLegislatura={depObject.idlegislatura}&ordem=ASC&ordenarPor=ano').text)
                         if len(despesas_json) == 0:
                             raise Exception('Returned json is empty')
                         for despesa in despesas_json["dados"]:
