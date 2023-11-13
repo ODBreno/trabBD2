@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import StaleDataError
-
+import uuid
 from DAO import *
 from mapeamento import *
 
@@ -128,7 +128,8 @@ class API:
                         if len(despesas_json) == 0:
                             raise Exception('Returned json is empty')
                         for despesa in despesas_json["dados"]:
-                            despesaObject = Despesas(numdocumento=str(despesa['numDocumento']),
+                            despesaObject = Despesas(id = str(uuid.uuid4()),
+                                                    numdocumento=str(despesa['numDocumento']),
                                                     coddocumento=str(despesa['codDocumento']),
                                                     tipodespesa=str(despesa['tipoDespesa']),
                                                     datadocumento=str(despesa['dataDocumento']),
@@ -138,7 +139,7 @@ class API:
                                                     valorliquido=float(despesa['valorLiquido']),
                                                 )
                             #Verifica se o objeto já existe no banco
-                            check = self.manipulateDB.selectDespesa(despesaObject.numdocumento)
+                            check = self.manipulateDB.selectDespesa(despesaObject.id)
                             #Se não existir, appenda no deputado
                             if not check:
                                 depObject.despesas.append(despesaObject)

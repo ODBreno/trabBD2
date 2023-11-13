@@ -22,7 +22,7 @@ class DAODeputados():
 class DAODespesas():
     
     def select(session, id):
-        dep = session.query(Despesas).filter(Despesas.numdocumento == id).first()
+        dep = session.query(Despesas).filter(Despesas.id == id).first()
         return dep
 
 class DAOOrgaos():
