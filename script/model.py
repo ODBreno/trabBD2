@@ -21,7 +21,8 @@ class AcessDB:
             session.commit()
             session.close()
             return 1
-        except:
+        except Exception as e:
+            print(e)
             session.close()
             return 0
 
@@ -136,38 +137,48 @@ class API:
         try:
             i = 1
             print('Fazendo a carga dos Eventos no banco...')
-            while i < 4:
+            while i < 11:
                 eventos_json = json.loads(
-                    requests.get(f'https://dadosabertos.camara.leg.br/api/v2/eventos?pagina={i}&ordem=ASC&ordenarPor=dataHoraInicio').text)
+                    requests.get(f'https://dadosabertos.camara.leg.br/api/v2/eventos?dataInicio=2023-01-01&pagina={i}&itens=100&ordem=ASC&ordenarPor=dataHoraInicio').text)
                 if len(eventos_json) == 0:
                     raise Exception('Returned json is empty')
                 for eve in eventos_json["dados"]:
+                    var = str(eve['dataHoraFim'])
+                    if var == 'None':
+                        var = str(eve['dataHoraInicio'])
+
                     eveObject = Evento(     id=int(eve['id']),
-                                            dataHoraInicio=str(eve['dataHoraInicio']),
-                                            dataHoraFim=str(eve['dataHoraFim']),
+                                            datahorainicio=str(eve['dataHoraInicio']),
+                                            datahorafim=var,
                                             situacao=str(eve['situacao']),
                                             descricao=str(eve['descricao']),
-                                            localExterno=str(eve['localExterno']),
-                                            localCamara=str(eve['localCamara']['nome']),
+                                            localexterno=str(eve['localExterno']),
+                                            localcamara=str(eve['localCamara']['nome']),
                                        )
                     # Verifica se o objeto já existe no banco
                     check = self.manipulateDB.selectEvent(eveObject.id)
                     id = str(eveObject.id)
-                    descricao = str(eveObject.descricao)
+                    descricao = str(eveObject.id)
                     # Se não existir, insere no banco
+
                     if not check:
-                        orgao = str(eve['orgaos'][0])
-                        orgaoId = self.manipulateDB.selectOrg(orgao['id'])
-                        eveObject.orgaos.append(orgaoId)
+                        orgao = (eve['orgaos'][0])
+                        if orgao:
+                            orgaoId = self.manipulateDB.selectOrg((orgao['id']))
+                            if orgaoId:
+                                eveObject.orgaos.append(orgaoId)
 
                         self.manipulateDB.insert(eveObject)
-                        print('Evento inserido no banco. ID: ' + id + ' Apelido: ' + descricao)
+                        print('Evento inserido no banco. ID: ' + id + ' Apelido: ' + id)
                     else:
-                        print('Evento já existe no banco. ID: ' + id + ' Apelido: ' + descricao)
+                        print('Evento já existe no banco. ID: ' + id + ' Apelido: ' + id)
                 i += 1
             return 1
         except Exception as e:
             print(e)
             return 0
+
+    def getLicitacao(self):
+        return 0
 
 

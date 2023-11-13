@@ -20,26 +20,14 @@ CREATE TABLE orgaos (
 	nomePublicacao text NOT NULL
 )
 
-CREATE TYPE camara as(
-    nome text,
-    predio text,
-    sala text,
-    andar text
-);
-
-
-CREATE TABLE eventos (
+CREATE TABLE evento (
 	id int PRIMARY KEY NOT NULL,
 	dataHoraInicio timestamp NOT NULL,
-	dataHoraFim timestamp,
-	situacao text NOT NULL,	
-	descricaoTipo text NOT NULL,
+	dataHoraFim timestamp NULL,
+	situacao text NOT NULL,
 	descricao text NOT NULL,
 	localExterno text,
-	localCamara camara,
-	nomePublicacao text NOT NULL,
-	id_orgao int NOT NULL,
-	FOREIGN KEY (id_orgao) REFERENCES orgaos(id)
+	localCamara text
 )
 
 CREATE TABLE licitacao (
@@ -67,7 +55,7 @@ CREATE TABLE licitacao (
 CREATE TABLE pedido_licitacao(
 	numPedido int PRIMARY KEY NOT NULL,
 	ano smallint NOT NULL,
-    id_licitacao int NOT NULL, 
+    id_licitacao int NOT NULL,
     id_orgao smallint NOT NULL,
 	tipoRegistro text NOT NULL,
 	anoPedido smallint NOT NULL,
@@ -85,4 +73,13 @@ CREATE TABLE deputado_orgao(
     FOREIGN KEY (id_deputado) REFERENCES deputados(id),
     FOREIGN KEY (id_orgao) REFERENCES orgaos(id)
 );
+
+CREATE TABLE evento_orgao(
+    id_evento int NOT NULL,
+    id_orgao int NOT NULL,
+    FOREIGN KEY (id_evento) REFERENCES evento(id),
+    FOREIGN KEY (id_orgao) REFERENCES orgaos(id)
+)
+
+
 

@@ -45,14 +45,14 @@ class Evento(Base):
     )
 
     id = Column(Integer, primary_key=True, nullable=False)
-    dataHoraInicio = Column(DateTime, nullable=False)
-    dataHoraFim = Column(DateTime)
+    datahorainicio = Column(DateTime, nullable=False)
+    datahorafim = Column(DateTime)
     situacao = Column(String, nullable=False)
     descricao = Column(Text, nullable=False)
-    localExterno = Column(String)
-    localCamara = Column(String)
+    localexterno = Column(Text)
+    localcamara = Column(Text)
 
-    orgaos = relationship('Orgaos', secondary='public.evento_orgao', back_populates='evento')
+    orgaos = relationship('Orgaos', secondary='public.evento_orgao', back_populates='eventos')
 
 class Licitacao(Base):
     __tablename__ = 'licitacao'
@@ -117,7 +117,7 @@ t_deputado_orgao = Table(
 t_evento_orgao = Table(
     'evento_orgao', metadata,
     Column('id_evento', Integer, nullable=False),
-    Column('id_orgao', SmallInteger, nullable=False),
+    Column('id_orgao', Integer, nullable=False),
     ForeignKeyConstraint(['id_evento'], ['public.evento.id'], name='evento_orgao_id_evento_fkey'),
     ForeignKeyConstraint(['id_orgao'], ['public.orgaos.id'], name='evento_orgao_id_orgao_fkey'),
     schema='public'
