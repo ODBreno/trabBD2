@@ -30,3 +30,11 @@ class DAOEventos():
     def select(session, id):
         event = session.query(Evento).filter(Evento.id == id).first()
         return event
+
+class DAOPedidos():
+
+    def select(session, id):
+        pedido = session.query(PedidoLicitacao).filter(PedidoLicitacao.id == id).first()
+        return pedido
+
+

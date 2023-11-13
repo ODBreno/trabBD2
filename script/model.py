@@ -57,6 +57,16 @@ class AcessDB:
             return event
         except:
             return 0
+
+    def selectPedido(id):
+        try:
+            session = DAO.getSession()
+            session.expire_on_commit = False
+            event = DAOPedidos.select(session, id)
+            session.commit()
+            return event
+        except:
+            return 0
     
 class API:
     def __init__(self):
@@ -179,6 +189,45 @@ class API:
             return 0
 
     def getLicitacao(self):
-        return 0
+        try:
+            i = 1
+            print('Fazendo a carga das Licitações no banco...')
+            while i < 11:
+                licitacao_json = json.loads(
+                    requests.get(
+                        f'https://dadosabertos.camara.leg.br/arquivos/licitacoesPedidos/json/licitacoesPedidos-2023.json').text)
+                if len(licitacao_json) == 0:
+                    raise Exception('Returned json is empty')
+                for licita in licitacao_json["dados"]:
+                    licitaObj = Evento(
+                                        numpedido=str(licita['numPedido']),
+                                        idlicitacao=str(licita['idLicitacao']),
+                                        tiporegistro=str(licita['tipoRegistro']),
+                                        anopedido=str(licita['anoPedido']),
+                                        datahoracadastro=str(licita['dataHoraCadastro']),
+                                        idorgao=str(licita['idOrgao']),
+                                        ano=str(licita['ano'])
+                                       )
+                    # Verifica se o objeto já existe no banco
+                    check = self.manipulateDB.selectPedido(licitaObj.id)
+                    idLicitacao = str(licitaObj.idlicitacao)
+                    numPedido = str(licitaObj.numpedido)
+                    orgao = str(licitaObj.idorgao)
+                    # Se não existir, insere no banco
 
+                    if not check:
+                        if orgao:
+                            orgaoId = self.manipulateDB.selectOrg((orgao['id']))
+                            if orgaoId:
+                                licitaObj.orgaos.append(orgaoId)
+
+                        self.manipulateDB.insert(licitaObj)
+                        print('Evento inserido no banco. ID: ' + idLicitacao + ' Apelido: ' + numPedido)
+                    else:
+                        print('Evento já existe no banco. ID: ' + idLicitacao + ' Apelido: ' + numPedido)
+                i += 1
+            return 1
+        except Exception as e:
+            print(e)
+            return 0
 

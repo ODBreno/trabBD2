@@ -49,7 +49,8 @@ CREATE TABLE licitacao (
 	numItens int NOT NULL,
 	numUnidades int NOT NULL,
 	numPropostas int NOT NULL,
-	numContratos int NOT NULL
+	numContratos int NOT NULL,
+    FOREIGN KEY (idLicitacao) REFERENCES pedido_licitacao(id_licitacao)
 )
 
 CREATE TABLE pedido_licitacao(
@@ -60,8 +61,6 @@ CREATE TABLE pedido_licitacao(
 	tipoRegistro text NOT NULL,
 	anoPedido smallint NOT NULL,
 	dataHoraCadastro timestamp NOT NULL,
-	observacoes text NOT NULL,
-    FOREIGN KEY (id_licitacao) REFERENCES licitacao(idLicitacao),
     FOREIGN KEY (id_orgao) REFERENCES orgaos(id)
 );
 

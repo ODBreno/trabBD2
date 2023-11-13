@@ -23,20 +23,6 @@ class Deputados(Base):
     orgaos = relationship('Orgaos', secondary='public.deputado_orgao', back_populates='deputados')
 
 
-class Camara(TypeDecorator):
-    impl = TEXT
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            value = f"({value['nome']}, {value['predio']}, {value['sala']}, {value['andar']})"
-        return value
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            value = eval(value)
-        return value
-
-
 class Evento(Base):
     __tablename__ = 'evento'
     __table_args__ = (
@@ -53,36 +39,6 @@ class Evento(Base):
     localcamara = Column(Text)
 
     orgaos = relationship('Orgaos', secondary='public.evento_orgao', back_populates='eventos')
-
-class Licitacao(Base):
-    __tablename__ = 'licitacao'
-    __table_args__ = (
-        PrimaryKeyConstraint('idlicitacao', name='licitacao_pkey'),
-        {'schema': 'public'}
-    )
-
-    idlicitacao = Column(Integer)
-    numero = Column(SmallInteger, nullable=False)
-    ano = Column(SmallInteger, nullable=False)
-    numprocesso = Column(Integer, nullable=False)
-    anoprocesso = Column(SmallInteger, nullable=False)
-    objeto = Column(Text, nullable=False)
-    modalidade = Column(Text, nullable=False)
-    tipo = Column(Text, nullable=False)
-    situacao = Column(Text, nullable=False)
-    vlrestimado = Column(Integer, nullable=False)
-    vlrcontratado = Column(Integer, nullable=False)
-    vlrpago = Column(Integer, nullable=False)
-    dataautorizacao = Column(Date, nullable=False)
-    datapublicacao = Column(Date, nullable=False)
-    dataabertura = Column(Date, nullable=False)
-    numitens = Column(Integer, nullable=False)
-    numunidades = Column(Integer, nullable=False)
-    numpropostas = Column(Integer, nullable=False)
-    numcontratos = Column(Integer, nullable=False)
-
-    pedido_licitacao = relationship('PedidoLicitacao', back_populates='licitacao')
-
 
 class Orgaos(Base):
     __tablename__ = 'orgaos'
@@ -122,25 +78,3 @@ t_evento_orgao = Table(
     ForeignKeyConstraint(['id_orgao'], ['public.orgaos.id'], name='evento_orgao_id_orgao_fkey'),
     schema='public'
 )
-
-
-class PedidoLicitacao(Base):
-    __tablename__ = 'pedido_licitacao'
-    __table_args__ = (
-        ForeignKeyConstraint(['id_licitacao'], ['public.licitacao.idlicitacao'], name='pedido_licitacao_id_licitacao_fkey'),
-        ForeignKeyConstraint(['id_orgao'], ['public.orgaos.id'], name='pedido_licitacao_id_orgao_fkey'),
-        PrimaryKeyConstraint('numpedido', name='pedido_licitacao_pkey'),
-        {'schema': 'public'}
-    )
-
-    numpedido = Column(Integer)
-    ano = Column(SmallInteger, nullable=False)
-    id_licitacao = Column(Integer, nullable=False)
-    id_orgao = Column(SmallInteger, nullable=False)
-    tiporegistro = Column(Text, nullable=False)
-    anopedido = Column(SmallInteger, nullable=False)
-    datahoracadastro = Column(DateTime, nullable=False)
-    observacoes = Column(Text, nullable=False)
-
-    licitacao = relationship('Licitacao', back_populates='pedido_licitacao')
-    orgaos = relationship('Orgaos', back_populates='pedido_licitacao')
