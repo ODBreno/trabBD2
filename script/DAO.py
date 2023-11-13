@@ -19,6 +19,12 @@ class DAODeputados():
         dep = session.query(Deputados).filter(Deputados.id == id).first()
         return dep
 
+class DAODespesas():
+    
+    def select(session, id):
+        dep = session.query(Despesas).filter(Despesas.numdocumento == id).first()
+        return dep
+
 class DAOOrgaos():
     
     def select(session, id):
@@ -31,10 +37,10 @@ class DAOEventos():
         event = session.query(Evento).filter(Evento.id == id).first()
         return event
 
-class DAOPedidos():
+class DAOLegislatura():
 
     def select(session, id):
-        pedido = session.query(PedidoLicitacao).filter(PedidoLicitacao.id_licitacao == id).first()
-        return pedido
+        legislatura = session.query(Legislatura).filter(Legislatura.id == id).first()
+        return legislatura
 
 

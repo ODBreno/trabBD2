@@ -1,13 +1,31 @@
 -- TODO: users, indices --
 
 -- TABELAS --
+CREATE TABLE legislatura (
+	id int PRIMARY KEY NOT NULL,
+	dataInicio date NOT NULL,
+	dataFim date NOT NULL
+)
 
 CREATE TABLE deputados (
 	id int PRIMARY KEY NOT NULL,
 	nome text NOT NULL,
 	siglaPartido text NOT NULL,
 	siglaUf varchar(2) NOT NULL,
-	idLegislatura smallint NOT NULL
+	idLegislatura smallint NOT NULL,
+	FOREIGN KEY (idLegislatura) REFERENCES legislatura(id)
+)
+
+CREATE TABLE despesas (
+	numDocumento text NOT NULL,
+	codDocumento bigint NOT NULL,
+	tipoDespesa text NOT NULL,
+	dataDocumento date NOT NULL,	
+	valorDocumento float NOT NULL,
+	nomeFornecedor text NOT NULL,
+	cnpjCpfFornecedor text NOT NULL,
+	valorLiquido float NOT NULL,
+	PRIMARY KEY (numDocumento, codDocumento)
 )
 
 CREATE TABLE orgaos (
@@ -15,7 +33,7 @@ CREATE TABLE orgaos (
 	sigla text NOT NULL,
 	nome text NOT NULL,	
 	apelido text NOT NULL,
-	codtipoOrgao smallint NOT NULL,
+	codtipoOrgao int NOT NULL,
 	tipoOrgao text NOT NULL,
 	nomePublicacao text NOT NULL
 )
@@ -30,45 +48,9 @@ CREATE TABLE evento (
 	localCamara text
 )
 
-CREATE TABLE licitacao (
-	idLicitacao int PRIMARY KEY NOT NULL,
-	numero smallint NOT NULL,
-	ano smallint NOT NULL,
-	numProcesso int NOT NULL,
-	anoProcesso smallint NOT NULL,	
-	objeto text NOT NULL,
-	modalidade text NOT NULL,
-	tipo text NOT NULL,
-	situacao text NOT NULL,
-	vlrEstimado int NOT NULL,
-	vlrContratado int NOT NULL,
-	vlrPago int NOT NULL,
-	dataAutorizacao date NOT NULL,
-	dataPublicacao date NOT NULL,
-	dataAbertura date NOT NULL,
-	numItens int NOT NULL,
-	numUnidades int NOT NULL,
-	numPropostas int NOT NULL,
-	numContratos int NOT NULL,
-    FOREIGN KEY (idLicitacao) REFERENCES pedido_licitacao(id_licitacao)
-)
-
-CREATE TABLE pedido_licitacao(
-	numPedido int PRIMARY KEY NOT NULL,
-	ano smallint NOT NULL,
-    id_licitacao int NOT NULL,
-    id_orgao smallint NOT NULL,
-	tipoRegistro text NOT NULL,
-	anoPedido smallint NOT NULL,
-	dataHoraCadastro timestamp NOT NULL,
-    FOREIGN KEY (id_orgao) REFERENCES orgaos(id)
-);
-
--- RELAÇÕES --
-
 CREATE TABLE deputado_orgao(
     id_deputado int NOT NULL, 
-    id_orgao smallint NOT NULL,
+    id_orgao int NOT NULL,
     FOREIGN KEY (id_deputado) REFERENCES deputados(id),
     FOREIGN KEY (id_orgao) REFERENCES orgaos(id)
 );
@@ -80,5 +62,28 @@ CREATE TABLE evento_orgao(
     FOREIGN KEY (id_orgao) REFERENCES orgaos(id)
 )
 
+CREATE TABLE evento_deputado(
+    id_evento int NOT NULL,
+    id_deputado int NOT NULL,
+    FOREIGN KEY (id_evento) REFERENCES evento(id),
+    FOREIGN KEY (id_deputado) REFERENCES deputados(id)
+)
 
+CREATE TABLE despesa_deputado(
+    numDocumento text NOT NULL,
+	codDocumento bigint NOT NULL,
+    id_deputado int NOT NULL,
+    FOREIGN KEY (numDocumento, codDocumento) REFERENCES despesas(numDocumento, codDocumento),
+    FOREIGN KEY (id_deputado) REFERENCES deputados(id)
+)
+
+SELECT * FROM legislatura
+SELECT * FROM orgaos
+SELECT * FROM despesas
+SELECT * FROM deputados join legislatura on deputados.idlegislatura = legislatura.id
+select * from deputados d join despesa_deputado dd on dd.id_deputado = d.id join despesas de on de.numdocumento = dd.numdocumento
+
+DELETE FROM deputados
+DELETE FROM despesas
+delete from despesa_deputado
 

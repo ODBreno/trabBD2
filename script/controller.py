@@ -11,17 +11,18 @@ class Controller:
 
         while opcao != 9:
             if opcao == 1:
-                result = self.API.getDeputados()
+                result = self.API.getLegislatura()
                 self.view.imprimeStatus(result)
             if opcao == 2:
-                result = self.API.getOrgaos()
+                result = self.API.getDeputados()
                 self.view.imprimeStatus(result)
             if opcao == 3:
-                result = self.API.getEventos()
+                result = self.API.getOrgaos()
                 self.view.imprimeStatus(result)
             if opcao == 4:
-                result = self.API.getLicitacao()
+                result = self.API.getEventos()
                 self.view.imprimeStatus(result)
+                
             opcao = self.view.menu()
 
 if __name__ == "__main__":

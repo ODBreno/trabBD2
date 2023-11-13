@@ -26,16 +26,34 @@ class AcessDB:
             session.close()
             return 0
 
+    def selectLeg(id):
+        try:
+            session = DAO.getSession()
+            session.expire_on_commit = False
+            dep = DAOLegislatura.select(session, id)
+            session.commit()
+            return dep
+        except:
+            return 0
+
+    def selectDespesa(id):
+        try:
+            session = DAO.getSession()
+            session.expire_on_commit = False
+            dep = DAODespesas.select(session, id)
+            session.commit()
+            return dep
+        except:
+            return 0
+
     def selectDep(id):
         try:
             session = DAO.getSession()
             session.expire_on_commit = False
             dep = DAODeputados.select(session, id)
             session.commit()
-
             return dep
         except:
-
             return 0
         
     def selectOrg(id):
@@ -57,20 +75,34 @@ class AcessDB:
             return event
         except:
             return 0
-
-    def selectPedido(id):
-        try:
-            session = DAO.getSession()
-            session.expire_on_commit = False
-            event = DAOPedidos.select(session, id)
-            session.commit()
-            return event
-        except:
-            return 0
     
 class API:
     def __init__(self):
         self.manipulateDB = AcessDB
+
+    def getLegislatura(self):
+        try:
+            print('Fazendo a carga das Legislaturas no banco...')
+            legislatura_json = json.loads(requests.get("https://dadosabertos.camara.leg.br/api/v2/legislaturas?itens=8&ordem=DESC&ordenarPor=id").text)
+            if len(legislatura_json) == 0:
+                raise Exception('Returned json is empty')
+            for leg in legislatura_json["dados"]:
+                legObject = Legislatura(id=int(leg['id']),
+                                        datainicio=str(leg['dataInicio']),
+                                        datafim=str(leg['dataFim'])
+                                    )
+                #Verifica se o objeto já existe no banco
+                check = self.manipulateDB.selectLeg(legObject.id)
+                id = str(legObject.id)
+                #Se não existir, insere no banco
+                if not check:
+                    self.manipulateDB.insert(legObject)
+                    print('Legislatura inserida no banco. ID: ' + id)
+                else:
+                    print('Legislatura já existe no banco. ID: ' + id)
+            return 1
+        except Exception as e:
+                return '\nERRO: ' + repr(e)
 
     def getDeputados(self):
         try:
@@ -91,12 +123,30 @@ class API:
                     check = self.manipulateDB.selectDep(depObject.id)
                     id = str(depObject.id)
                     nome = str(depObject.nome)
-                    #Se não existir, insere no banco
                     if not check:
+                        despesas_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/deputados/{depObject.id}/despesas?idLegislatura={depObject.idlegislatura}&ordem=ASC&ordenarPor=ano').text)
+                        if len(despesas_json) == 0:
+                            raise Exception('Returned json is empty')
+                        for despesa in despesas_json["dados"]:
+                            despesaObject = Despesas(numdocumento=str(despesa['numDocumento']),
+                                                    coddocumento=str(despesa['codDocumento']),
+                                                    tipodespesa=str(despesa['tipoDespesa']),
+                                                    datadocumento=str(despesa['dataDocumento']),
+                                                    valordocumento=float(despesa['valorDocumento']),
+                                                    nomefornecedor=str(despesa['nomeFornecedor']),
+                                                    cnpjcpffornecedor=str(despesa['cnpjCpfFornecedor']),
+                                                    valorliquido=float(despesa['valorLiquido']),
+                                                )
+                            #Verifica se o objeto já existe no banco
+                            check = self.manipulateDB.selectDespesa(despesaObject.numdocumento)
+                            #Se não existir, appenda no deputado
+                            if not check:
+                                depObject.despesas.append(despesaObject)
+                        # insere no banco
                         self.manipulateDB.insert(depObject)
-                    #     print('Deputado inserido no banco. ID: ' + id + ' Nome: ' + nome)
-                    # else:
-                    #     print('Deputado já existe no banco. ID: ' + id + ' Nome: ' + nome)
+                        print('Deputado e suas despesas inseridos no banco. ID: ' + id + ' Nome: ' + nome)
+                    else:
+                        print('Deputado já existe no banco. ID: ' + id + ' Nome: ' + nome)
                 i+= 1
             return 1
         except Exception as e:
@@ -142,7 +192,6 @@ class API:
         except Exception as e:
                 return '\nERRO: ' + repr(e)
 
-
     def getEventos(self):
         try:
             i = 1
@@ -156,7 +205,6 @@ class API:
                     var = str(eve['dataHoraFim'])
                     if var == 'None':
                         var = str(eve['dataHoraInicio'])
-
                     eveObject = Evento(     id=int(eve['id']),
                                             datahorainicio=str(eve['dataHoraInicio']),
                                             datahorafim=var,
@@ -168,65 +216,24 @@ class API:
                     # Verifica se o objeto já existe no banco
                     check = self.manipulateDB.selectEvent(eveObject.id)
                     id = str(eveObject.id)
-                    descricao = str(eveObject.id)
                     # Se não existir, insere no banco
-
                     if not check:
-                        orgao = (eve['orgaos'][0])
-                        if orgao:
-                            orgaoId = self.manipulateDB.selectOrg((orgao['id']))
-                            if orgaoId:
-                                eveObject.orgaos.append(orgaoId)
+                        participantes_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/eventos/{eve["id"]}/deputados').text)
+                        for participante in participantes_json["dados"]:
+                            if participante:
+                                participanteId = self.manipulateDB.selectDep(participante['id'])
+                                if participanteId:
+                                    eveObject.deputados.append(participanteId)
+                        for orgao in eve['orgaos']:
+                            if orgao:
+                                orgaoId = self.manipulateDB.selectOrg(orgao['id'])
+                                if orgaoId:
+                                    eveObject.orgaos.append(orgaoId)
 
                         self.manipulateDB.insert(eveObject)
-                        print('Evento inserido no banco. ID: ' + id + ' Apelido: ' + id)
+                        print('Evento inserido no banco. ID: ' + id)
                     else:
-                        print('Evento já existe no banco. ID: ' + id + ' Apelido: ' + id)
-                i += 1
-            return 1
-        except Exception as e:
-            print(e)
-            return 0
-
-    def getLicitacao(self):
-        try:
-            i = 1
-            print('Fazendo a carga das Licitações no banco...')
-            while i < 11:
-                licitacao_json = json.loads(
-                    requests.get(
-                        f'https://dadosabertos.camara.leg.br/arquivos/licitacoesPedidos/json/licitacoesPedidos-2023.json').text)
-                if len(licitacao_json) == 0:
-                    raise Exception('Returned json is empty')
-                for licita in licitacao_json["dados"]:
-                    try:
-                        licitaObj = PedidoLicitacao(
-                                            numpedido=str(licita['numPedido']),
-                                            id_licitacao=str(licita['idLicitacao']),
-                                            tiporegistro=str(licita['tipoRegistro']),
-                                            anopedido=str(licita['anoPedido']),
-                                            datahoracadastro=str(licita['dataHoraCadastro']),
-                                            id_orgao=int(licita['idOrgao']),
-                                            ano=str(licita['ano'])
-                                           )
-                        # Verifica se o objeto já existe no banco
-                        check = self.manipulateDB.selectPedido(licitaObj.id_licitacao)
-                        idLicitacao = str(licitaObj.id_licitacao)
-                        numPedido = str(licitaObj.numpedido)
-                        orgao = str(licitaObj.id_orgao)
-                        # Se não existir, insere no banco
-
-                        if not check:
-                            if orgao:
-                                orgaoId = self.manipulateDB.selectOrg(orgao)
-                                if orgaoId:
-                                    licitaObj.orgaos.append(orgaoId)
-                                    self.manipulateDB.insert(licitaObj)
-                                    print('Evento inserido no banco. ID: ' + idLicitacao + ' Apelido: ' + numPedido)
-                                else:
-                                    print('Evento já existe no banco. ID: ' + idLicitacao + ' Apelido: ' + numPedido)
-                    except:
-                        pass
+                        print('Evento já existe no banco. ID: ' + id)
                 i += 1
             return 1
         except Exception as e:

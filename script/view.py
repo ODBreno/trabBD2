@@ -6,10 +6,10 @@ class View():
 
     def menu(self):
         print("M E N U")
-        print("1. Popular a tabela de Deputados")
-        print("2. Popular a tabela de Orgãos")
-        print("3. Popular a tabela de Eventos")
-        print("4. Popular a tabela de PedidosLicitação")
+        print("1. Popular a tabela de Legislaturas")
+        print("2. Popular a tabela de Deputados e despesas")
+        print("3. Popular a tabela de Orgãos")
+        print("4. Popular a tabela de Eventos e de evento/deputados")
         print("9. Sair")
         opcao = int(input("Digite a opcao desejada : "))
         return opcao
