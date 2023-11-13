@@ -1,73 +1,40 @@
-from sqlalchemy import Column, Date, DateTime, ForeignKeyConstraint, Integer, PrimaryKeyConstraint, SmallInteger, String, Table, Text
+from sqlalchemy import BigInteger, Column, Date, DateTime, Float, ForeignKeyConstraint, Integer, PrimaryKeyConstraint, SmallInteger, String, Table, Text
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.sql.sqltypes import NullType
 
 Base = declarative_base()
 metadata = Base.metadata
 
 
-class Deputados(Base):
-    __tablename__ = 'deputados'
+class Evento(Base):
+    __tablename__ = 'evento'
     __table_args__ = (
-        PrimaryKeyConstraint('id', name='deputados_pkey'),
-        {'schema': 'public'}
-    )
-
-    id = Column(Integer)
-    nome = Column(Text, nullable=False)
-    siglapartido = Column(Text, nullable=False)
-    siglauf = Column(String(2), nullable=False)
-    idlegislatura = Column(SmallInteger, nullable=False)
-
-    orgaos = relationship('Orgaos', secondary='public.deputado_orgao', back_populates='deputados')
-
-
-class Eventos(Base):
-    __tablename__ = 'eventos'
-    __table_args__ = (
-        PrimaryKeyConstraint('id', name='eventos_pkey'),
+        PrimaryKeyConstraint('id', name='evento_pkey'),
         {'schema': 'public'}
     )
 
     id = Column(Integer)
     datahorainicio = Column(DateTime, nullable=False)
     situacao = Column(Text, nullable=False)
-    descricaotipo = Column(Text, nullable=False)
     descricao = Column(Text, nullable=False)
-    nomepublicacao = Column(Text, nullable=False)
     datahorafim = Column(DateTime)
     localexterno = Column(Text)
-    localcamara = Column(NullType)
+    localcamara = Column(Text)
+
+    orgaos = relationship('Orgaos', secondary='public.evento_orgao', back_populates='evento')
 
 
-class Licitacao(Base):
-    __tablename__ = 'licitacao'
+class Legislatura(Base):
+    __tablename__ = 'legislatura'
     __table_args__ = (
-        PrimaryKeyConstraint('idlicitacao', name='licitacao_pkey'),
+        PrimaryKeyConstraint('id', name='legislatura_pkey'),
         {'schema': 'public'}
     )
 
-    idlicitacao = Column(Integer)
-    numero = Column(SmallInteger, nullable=False)
-    ano = Column(SmallInteger, nullable=False)
-    numprocesso = Column(Integer, nullable=False)
-    anoprocesso = Column(SmallInteger, nullable=False)
-    objeto = Column(Text, nullable=False)
-    modalidade = Column(Text, nullable=False)
-    tipo = Column(Text, nullable=False)
-    situacao = Column(Text, nullable=False)
-    vlrestimado = Column(Integer, nullable=False)
-    vlrcontratado = Column(Integer, nullable=False)
-    vlrpago = Column(Integer, nullable=False)
-    dataautorizacao = Column(Date, nullable=False)
-    datapublicacao = Column(Date, nullable=False)
-    dataabertura = Column(Date, nullable=False)
-    numitens = Column(Integer, nullable=False)
-    numunidades = Column(Integer, nullable=False)
-    numpropostas = Column(Integer, nullable=False)
-    numcontratos = Column(Integer, nullable=False)
+    id = Column(Integer)
+    datainicio = Column(Date, nullable=False)
+    datafim = Column(Date, nullable=False)
 
-    pedido_licitacao = relationship('PedidoLicitacao', back_populates='licitacao')
+    deputados = relationship('Deputados', back_populates='legislatura')
 
 
 class Orgaos(Base):
@@ -85,37 +52,75 @@ class Orgaos(Base):
     tipoorgao = Column(Text, nullable=False)
     nomepublicacao = Column(Text, nullable=False)
 
+    evento = relationship('Evento', secondary='public.evento_orgao', back_populates='orgaos')
     deputados = relationship('Deputados', secondary='public.deputado_orgao', back_populates='orgaos')
-    pedido_licitacao = relationship('PedidoLicitacao', back_populates='orgaos')
+
+
+class Deputados(Base):
+    __tablename__ = 'deputados'
+    __table_args__ = (
+        ForeignKeyConstraint(['idlegislatura'], ['public.legislatura.id'], name='deputados_idlegislatura_fkey'),
+        PrimaryKeyConstraint('id', name='deputados_pkey'),
+        {'schema': 'public'}
+    )
+
+    id = Column(Integer)
+    nome = Column(Text, nullable=False)
+    siglapartido = Column(Text, nullable=False)
+    siglauf = Column(String(2), nullable=False)
+    idlegislatura = Column(SmallInteger, nullable=False)
+
+    legislatura = relationship('Legislatura', back_populates='deputados')
+    orgaos = relationship('Orgaos', secondary='public.deputado_orgao', back_populates='deputados')
+    despesas = relationship('Despesas', back_populates='deputados')
+
+
+t_evento_deputado = Table(
+    'evento_deputado', metadata,
+    Column('id_evento', Integer, nullable=False),
+    Column('id_deputado', Integer, nullable=False),
+    ForeignKeyConstraint(['id_evento'], ['public.evento.id'], name='evento_deputado_id_evento_fkey'),
+    schema='public'
+)
+
+
+t_evento_orgao = Table(
+    'evento_orgao', metadata,
+    Column('id_evento', Integer, nullable=False),
+    Column('id_orgao', Integer, nullable=False),
+    ForeignKeyConstraint(['id_evento'], ['public.evento.id'], name='evento_orgao_id_evento_fkey'),
+    ForeignKeyConstraint(['id_orgao'], ['public.orgaos.id'], name='evento_orgao_id_orgao_fkey'),
+    schema='public'
+)
 
 
 t_deputado_orgao = Table(
     'deputado_orgao', metadata,
     Column('id_deputado', Integer, nullable=False),
-    Column('id_orgao', SmallInteger, nullable=False),
+    Column('id_orgao', Integer, nullable=False),
     ForeignKeyConstraint(['id_deputado'], ['public.deputados.id'], name='deputado_orgao_id_deputado_fkey'),
     ForeignKeyConstraint(['id_orgao'], ['public.orgaos.id'], name='deputado_orgao_id_orgao_fkey'),
     schema='public'
 )
 
 
-class PedidoLicitacao(Base):
-    __tablename__ = 'pedido_licitacao'
+class Despesas(Base):
+    __tablename__ = 'despesas'
     __table_args__ = (
-        ForeignKeyConstraint(['id_licitacao'], ['public.licitacao.idlicitacao'], name='pedido_licitacao_id_licitacao_fkey'),
-        ForeignKeyConstraint(['id_orgao'], ['public.orgaos.id'], name='pedido_licitacao_id_orgao_fkey'),
-        PrimaryKeyConstraint('numpedido', name='pedido_licitacao_pkey'),
+        ForeignKeyConstraint(['id_deputado'], ['public.deputados.id'], name='despesas_id_deputado_fkey'),
+        PrimaryKeyConstraint('id', name='despesas_pkey'),
         {'schema': 'public'}
     )
 
-    numpedido = Column(Integer)
-    ano = Column(SmallInteger, nullable=False)
-    id_licitacao = Column(Integer, nullable=False)
-    id_orgao = Column(SmallInteger, nullable=False)
-    tiporegistro = Column(Text, nullable=False)
-    anopedido = Column(SmallInteger, nullable=False)
-    datahoracadastro = Column(DateTime, nullable=False)
-    observacoes = Column(Text, nullable=False)
+    id = Column(Text)
+    numdocumento = Column(Text, nullable=False)
+    coddocumento = Column(BigInteger, nullable=False)
+    tipodespesa = Column(Text, nullable=False)
+    datadocumento = Column(Date, nullable=False)
+    valordocumento = Column(Float(53), nullable=False)
+    nomefornecedor = Column(Text, nullable=False)
+    cnpjcpffornecedor = Column(Text, nullable=False)
+    valorliquido = Column(Float(53), nullable=False)
+    id_deputado = Column(Integer, nullable=False)
 
-    licitacao = relationship('Licitacao', back_populates='pedido_licitacao')
-    orgaos = relationship('Orgaos', back_populates='pedido_licitacao')
+    deputados = relationship('Deputados', back_populates='despesas')

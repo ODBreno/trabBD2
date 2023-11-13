@@ -18,7 +18,7 @@ Conforme as orientações para realização da parte 1 do trabalho da disciplina
 
 As orientações estão divididas nos seguintes tópicos:
 
-- [Script de carga para API do IGDB](#script-de-carga-para-api-do-igdb)
+- [Script de carga para API da Câmara dos Deputados](#script-de-carga-para-api-da-camara-dos-deputados)
   - [Sobre](#sobre)
   - [Banco de dados :chair: :game\_die:](#banco-de-dados-chair-game_die)
   - [Pré-requisitos e configuração :hammer\_and\_wrench:](#pré-requisitos-e-configuração-hammer_and_wrench)
