@@ -25,7 +25,9 @@ CREATE TABLE despesas (
 	valorDocumento float NOT NULL,
 	nomeFornecedor text NOT NULL,
 	cnpjCpfFornecedor text NOT NULL,
-	valorLiquido float NOT NULL
+	valorLiquido float NOT NULL,
+	id_deputado int NOT NULL,
+	FOREIGN KEY (id_deputado) REFERENCES deputados(id)
 )
 
 CREATE TABLE orgaos (
@@ -69,15 +71,15 @@ CREATE TABLE evento_deputado(
     FOREIGN KEY (id_deputado) REFERENCES deputados(id)
 )
 
+
 SELECT * FROM legislatura
 SELECT * FROM orgaos
 SELECT * FROM despesas
 SELECT * FROM evento
 SELECT * FROM evento_deputado 
 SELECT * FROM deputados join legislatura on deputados.idlegislatura = legislatura.id
-select * from deputados d join despesa_deputado dd on dd.id_deputado = d.id join despesas de on de.numdocumento = dd.numdocumento
 
 DELETE FROM deputados
 DELETE FROM despesas
-delete from despesa_deputado
+
 
