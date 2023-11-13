@@ -16,9 +16,9 @@ GRANT usuario TO deputadosUSER;
 GRANT dev TO deputadosDEV;
 GRANT dba TO deputadosDBA;
 
-GRANT USAGE ON SCHEMA public TO martinsUSER;
-GRANT USAGE ON SCHEMA public TO martinsDEV;
-GRANT USAGE ON SCHEMA public TO martinsDBA;
+GRANT USAGE ON SCHEMA public TO deputadosUSER;
+GRANT USAGE ON SCHEMA public TO deputadosDEV;
+GRANT USAGE ON SCHEMA public TO deputadosDBA;
 
 
 -- TABELAS --
