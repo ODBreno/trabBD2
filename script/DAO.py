@@ -34,7 +34,7 @@ class DAOEventos():
 class DAOPedidos():
 
     def select(session, id):
-        pedido = session.query(PedidoLicitacao).filter(PedidoLicitacao.id == id).first()
+        pedido = session.query(PedidoLicitacao).filter(PedidoLicitacao.id_licitacao == id).first()
         return pedido
 
 

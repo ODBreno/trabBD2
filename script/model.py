@@ -199,32 +199,34 @@ class API:
                 if len(licitacao_json) == 0:
                     raise Exception('Returned json is empty')
                 for licita in licitacao_json["dados"]:
-                    licitaObj = Evento(
-                                        numpedido=str(licita['numPedido']),
-                                        idlicitacao=str(licita['idLicitacao']),
-                                        tiporegistro=str(licita['tipoRegistro']),
-                                        anopedido=str(licita['anoPedido']),
-                                        datahoracadastro=str(licita['dataHoraCadastro']),
-                                        idorgao=str(licita['idOrgao']),
-                                        ano=str(licita['ano'])
-                                       )
-                    # Verifica se o objeto já existe no banco
-                    check = self.manipulateDB.selectPedido(licitaObj.id)
-                    idLicitacao = str(licitaObj.idlicitacao)
-                    numPedido = str(licitaObj.numpedido)
-                    orgao = str(licitaObj.idorgao)
-                    # Se não existir, insere no banco
+                    try:
+                        licitaObj = PedidoLicitacao(
+                                            numpedido=str(licita['numPedido']),
+                                            id_licitacao=str(licita['idLicitacao']),
+                                            tiporegistro=str(licita['tipoRegistro']),
+                                            anopedido=str(licita['anoPedido']),
+                                            datahoracadastro=str(licita['dataHoraCadastro']),
+                                            id_orgao=int(licita['idOrgao']),
+                                            ano=str(licita['ano'])
+                                           )
+                        # Verifica se o objeto já existe no banco
+                        check = self.manipulateDB.selectPedido(licitaObj.id_licitacao)
+                        idLicitacao = str(licitaObj.id_licitacao)
+                        numPedido = str(licitaObj.numpedido)
+                        orgao = str(licitaObj.id_orgao)
+                        # Se não existir, insere no banco
 
-                    if not check:
-                        if orgao:
-                            orgaoId = self.manipulateDB.selectOrg((orgao['id']))
-                            if orgaoId:
-                                licitaObj.orgaos.append(orgaoId)
-
-                        self.manipulateDB.insert(licitaObj)
-                        print('Evento inserido no banco. ID: ' + idLicitacao + ' Apelido: ' + numPedido)
-                    else:
-                        print('Evento já existe no banco. ID: ' + idLicitacao + ' Apelido: ' + numPedido)
+                        if not check:
+                            if orgao:
+                                orgaoId = self.manipulateDB.selectOrg(orgao)
+                                if orgaoId:
+                                    licitaObj.orgaos.append(orgaoId)
+                                    self.manipulateDB.insert(licitaObj)
+                                    print('Evento inserido no banco. ID: ' + idLicitacao + ' Apelido: ' + numPedido)
+                                else:
+                                    print('Evento já existe no banco. ID: ' + idLicitacao + ' Apelido: ' + numPedido)
+                    except:
+                        pass
                 i += 1
             return 1
         except Exception as e:
