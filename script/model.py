@@ -45,7 +45,16 @@ class AcessDB:
             session.commit()
             return org
         except:
- 
+            return 0
+
+    def selectEvent(id):
+        try:
+            session = DAO.getSession()
+            session.expire_on_commit = False
+            event = DAOEventos.select(session, id)
+            session.commit()
+            return event
+        except:
             return 0
     
 class API:
@@ -121,3 +130,44 @@ class API:
             return 1
         except Exception as e:
                 return '\nERRO: ' + repr(e)
+
+
+    def getEventos(self):
+        try:
+            i = 1
+            print('Fazendo a carga dos Eventos no banco...')
+            while i < 4:
+                eventos_json = json.loads(
+                    requests.get(f'https://dadosabertos.camara.leg.br/api/v2/eventos?pagina={i}&ordem=ASC&ordenarPor=dataHoraInicio').text)
+                if len(eventos_json) == 0:
+                    raise Exception('Returned json is empty')
+                for eve in eventos_json["dados"]:
+                    eveObject = Evento(     id=int(eve['id']),
+                                            dataHoraInicio=str(eve['dataHoraInicio']),
+                                            dataHoraFim=str(eve['dataHoraFim']),
+                                            situacao=str(eve['situacao']),
+                                            descricao=str(eve['descricao']),
+                                            localExterno=str(eve['localExterno']),
+                                            localCamara=str(eve['localCamara']['nome']),
+                                       )
+                    # Verifica se o objeto já existe no banco
+                    check = self.manipulateDB.selectEvent(eveObject.id)
+                    id = str(eveObject.id)
+                    descricao = str(eveObject.descricao)
+                    # Se não existir, insere no banco
+                    if not check:
+                        orgao = str(eve['orgaos'][0])
+                        orgaoId = self.manipulateDB.selectOrg(orgao['id'])
+                        eveObject.orgaos.append(orgaoId)
+
+                        self.manipulateDB.insert(eveObject)
+                        print('Evento inserido no banco. ID: ' + id + ' Apelido: ' + descricao)
+                    else:
+                        print('Evento já existe no banco. ID: ' + id + ' Apelido: ' + descricao)
+                i += 1
+            return 1
+        except Exception as e:
+            print(e)
+            return 0
+
+

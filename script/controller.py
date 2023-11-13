@@ -16,6 +16,9 @@ class Controller:
             if opcao == 2:
                 result = self.API.getOrgaos()
                 self.view.imprimeStatus(result)
+            if opcao == 3:
+                result = self.API.getEventos()
+                self.view.imprimeStatus(result)
             opcao = self.view.menu()
 
 if __name__ == "__main__":

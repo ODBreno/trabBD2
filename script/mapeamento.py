@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Date, DateTime, ForeignKeyConstraint, Integer, PrimaryKeyConstraint, SmallInteger, String, Table, Text
+from sqlalchemy import Column, Date, DateTime, ForeignKeyConstraint, Integer, PrimaryKeyConstraint, SmallInteger, \
+    String, Table, Text, TypeDecorator, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.sql.sqltypes import NullType
+from sqlalchemy.sql.sqltypes import NullType, TEXT
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -22,23 +23,36 @@ class Deputados(Base):
     orgaos = relationship('Orgaos', secondary='public.deputado_orgao', back_populates='deputados')
 
 
-class Eventos(Base):
-    __tablename__ = 'eventos'
+class Camara(TypeDecorator):
+    impl = TEXT
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = f"({value['nome']}, {value['predio']}, {value['sala']}, {value['andar']})"
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = eval(value)
+        return value
+
+
+class Evento(Base):
+    __tablename__ = 'evento'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='eventos_pkey'),
         {'schema': 'public'}
     )
 
-    id = Column(Integer)
-    datahorainicio = Column(DateTime, nullable=False)
-    situacao = Column(Text, nullable=False)
-    descricaotipo = Column(Text, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False)
+    dataHoraInicio = Column(DateTime, nullable=False)
+    dataHoraFim = Column(DateTime)
+    situacao = Column(String, nullable=False)
     descricao = Column(Text, nullable=False)
-    nomepublicacao = Column(Text, nullable=False)
-    datahorafim = Column(DateTime)
-    localexterno = Column(Text)
-    localcamara = Column(NullType)
+    localExterno = Column(String)
+    localCamara = Column(String)
 
+    orgaos = relationship('Orgaos', secondary='public.evento_orgao', back_populates='evento')
 
 class Licitacao(Base):
     __tablename__ = 'licitacao'
@@ -86,6 +100,8 @@ class Orgaos(Base):
     nomepublicacao = Column(Text, nullable=False)
 
     deputados = relationship('Deputados', secondary='public.deputado_orgao', back_populates='orgaos')
+    eventos = relationship('Evento', secondary='public.evento_orgao', back_populates='orgaos')
+
     pedido_licitacao = relationship('PedidoLicitacao', back_populates='orgaos')
 
 
@@ -95,6 +111,15 @@ t_deputado_orgao = Table(
     Column('id_orgao', SmallInteger, nullable=False),
     ForeignKeyConstraint(['id_deputado'], ['public.deputados.id'], name='deputado_orgao_id_deputado_fkey'),
     ForeignKeyConstraint(['id_orgao'], ['public.orgaos.id'], name='deputado_orgao_id_orgao_fkey'),
+    schema='public'
+)
+
+t_evento_orgao = Table(
+    'evento_orgao', metadata,
+    Column('id_evento', Integer, nullable=False),
+    Column('id_orgao', SmallInteger, nullable=False),
+    ForeignKeyConstraint(['id_evento'], ['public.evento.id'], name='evento_orgao_id_evento_fkey'),
+    ForeignKeyConstraint(['id_orgao'], ['public.orgaos.id'], name='evento_orgao_id_orgao_fkey'),
     schema='public'
 )
 
