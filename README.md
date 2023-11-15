@@ -97,6 +97,8 @@ Utilitários:
   <tr>
 </td>
     <td align="center"><a href="https://github.com/ODBreno"><img style="border-radius: 50%;" src="https://avatars.githubusercontent.com/u/92598517?s=400&v=4" width="100px;" alt=""/><br /><sub><b>Breno Oliveira Dias</b></sub></a><br /><a href="https://github.com/ODBreno" title="Breno">:technologist:</a></td>
+    <td align="center"><a href="https://github.com/perebati"><img style="border-radius: 50%;" src="[https://avatars.githubusercontent.com/u/92598517?s=400&v=4](https://gartic.com.br/imgs/mural/_f/_funtimefoxyhuman_/apenas-um-pikachu-com-bigode.png)" width="100px;" alt=""/><br /><sub><b>Lucas Batista Pereira</b></sub></a><br /><a href="https://github.com/perebati" title="Lucas">:developer:</a></td>
+
 </td>
   </tr>
 </table>
