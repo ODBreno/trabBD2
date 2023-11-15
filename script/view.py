@@ -10,7 +10,7 @@ class View():
         print("2. Popular a tabela de Deputados e despesas")
         print("3. Popular a tabela de Orgãos")
         print("4. Popular a tabela de Eventos e de evento/deputados")
-        print("9. Sair")
+        print("5. Sair")
         opcao = int(input("Digite a opcao desejada : "))
         return opcao
 

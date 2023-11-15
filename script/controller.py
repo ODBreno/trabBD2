@@ -9,7 +9,7 @@ class Controller:
     def inicio(self):
         opcao = self.view.inicio()
 
-        while opcao != 9:
+        while opcao != 5:
             if opcao == 1:
                 result = self.API.getLegislatura()
                 self.view.imprimeStatus(result)

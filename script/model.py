@@ -14,6 +14,7 @@ import requests
 from datetime import datetime
 
 class AcessDB:
+    # Função de inserção no banco
     def insert(obj):
         try:
             session = DAO.getSession()
@@ -26,6 +27,7 @@ class AcessDB:
             session.close()
             return 0
 
+    # Funções para buscar um registro do banco
     def selectLeg(id):
         try:
             session = DAO.getSession()
@@ -85,7 +87,7 @@ class API:
             print('Fazendo a carga das Legislaturas no banco...')
             legislatura_json = json.loads(requests.get("https://dadosabertos.camara.leg.br/api/v2/legislaturas?itens=8&ordem=DESC&ordenarPor=id").text)
             if len(legislatura_json) == 0:
-                raise Exception('Returned json is empty')
+                raise Exception('Json vazio')
             for leg in legislatura_json["dados"]:
                 legObject = Legislatura(id=int(leg['id']),
                                         datainicio=str(leg['dataInicio']),
@@ -111,8 +113,9 @@ class API:
             while i < 4:
                 deputados_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=57&idLegislatura=56&idLegislatura=55&idLegislatura=54&idLegislatura=53&idLegislatura=52&idLegislatura=51&idLegislatura=50&pagina={i}').text)
                 if len(deputados_json) == 0:
-                    raise Exception('Returned json is empty')
+                    raise Exception('Json vazio')
                 for dep in deputados_json["dados"]:
+                    # cria o objeto de acordo com o retorno da API
                     depObject = Deputados(id=int(dep['id']),
                                             nome=str(dep['nome']),
                                             siglapartido=str(dep['siglaPartido']),
@@ -124,10 +127,12 @@ class API:
                     id = str(depObject.id)
                     nome = str(depObject.nome)
                     if not check:
+                        # para cada deputado, procura suas despesas na legislatura em que ele foi eleito
                         despesas_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/deputados/{depObject.id}/despesas?itens=100&idLegislatura={depObject.idlegislatura}&ordem=ASC&ordenarPor=ano').text)
                         if len(despesas_json) == 0:
-                            raise Exception('Returned json is empty')
+                            raise Exception('Json vazio')
                         for despesa in despesas_json["dados"]:
+                            # cria o objeto de acordo com o retorno da API
                             despesaObject = Despesas(id = str(uuid.uuid4()),
                                                     numdocumento=str(despesa['numDocumento']),
                                                     coddocumento=str(despesa['codDocumento']),
@@ -140,7 +145,7 @@ class API:
                                                 )
                             #Verifica se o objeto já existe no banco
                             check = self.manipulateDB.selectDespesa(despesaObject.id)
-                            #Se não existir, appenda no deputado
+                            #Se não existir, coloca na lista de despesas do deputado
                             if not check:
                                 depObject.despesas.append(despesaObject)
                         # insere no banco
@@ -158,9 +163,10 @@ class API:
             i = 1
             print('Fazendo a carga dos Orgaos no banco...')
             while i < 3:
+                # cria o objeto de acordo com o retorno da API
                 orgaos_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/orgaos?pagina={i}').text)
                 if len(orgaos_json) == 0:
-                    raise Exception('Returned json is empty')
+                    raise Exception('Json vazio')
                 for org in orgaos_json["dados"]:
                     lista_existentes = []
                     orgObject = Orgaos(id=int(org['id']),
@@ -201,11 +207,13 @@ class API:
                 eventos_json = json.loads(
                     requests.get(f'https://dadosabertos.camara.leg.br/api/v2/eventos?dataInicio=2023-01-01&pagina={i}&itens=100&ordem=ASC&ordenarPor=dataHoraInicio').text)
                 if len(eventos_json) == 0:
-                    raise Exception('Returned json is empty')
+                    raise Exception('Json vazio')
                 for eve in eventos_json["dados"]:
+                    # Tratamento do caso em que não inserem a dataHoraFim do evento, na grande maioria dos casos o evento já havia acabado mesmo
                     var = str(eve['dataHoraFim'])
                     if var == 'None':
                         var = str(eve['dataHoraInicio'])
+                    # cria o objeto de acordo com o retorno da API
                     eveObject = Evento(     id=int(eve['id']),
                                             datahorainicio=str(eve['dataHoraInicio']),
                                             datahorafim=var,
@@ -219,6 +227,7 @@ class API:
                     id = str(eveObject.id)
                     # Se não existir, insere no banco
                     if not check:
+                        # Para cada evento, verifica os participantes e os coloca na lista de relacionamento chamada deputados
                         participantes_json = json.loads(requests.get(f'https://dadosabertos.camara.leg.br/api/v2/eventos/{eve["id"]}/deputados').text)
                         for participante in participantes_json["dados"]:
                             if participante:
@@ -226,6 +235,7 @@ class API:
                                 if participanteId:
                                     eveObject.deputados.append(participanteId)
                         for orgao in eve['orgaos']:
+                            # Para cada orgão, verifica se ele existe no banco e o coloca na lista de relacionamento chamada orgãos
                             if orgao:
                                 orgaoId = self.manipulateDB.selectOrg(orgao['id'])
                                 if orgaoId:
