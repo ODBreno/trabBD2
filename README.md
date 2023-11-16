@@ -98,7 +98,7 @@ Utilitários:
 </td>
     <td align="center"><a href="https://github.com/ODBreno"><img style="border-radius: 50%;" src="https://avatars.githubusercontent.com/u/92598517?s=400&v=4" width="100px;" alt=""/><br /><sub><b>Breno Oliveira Dias</b></sub></a><br /><a href="https://github.com/ODBreno" title="Breno">:technologist:</a></td>
     <td align="center"><a href="https://github.com/perebati"><img style="border-radius: 50%;" src="https://github.com/settings/profile" width="100px;" alt=""/><br /><sub><b>Lucas Batista Pereira</b></sub></a><br /><a href="https://github.com/perebati" title="Lucas">🧑‍🎓</a></td>
-
+    <td align="center"><a href="https://github.com/danielhfc"><img style="border-radius: 50%;" src="https://github.com/settings/profile" width="100px;" alt=""/><br /><sub><b>Daniel Henrique Ferreira Carvalho</b></sub></a><br /><a href="https://github.com/danielhfc" title="Daniel">🤵‍♂️</a></td>
 </td>
   </tr>
 </table>
