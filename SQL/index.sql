@@ -1,4 +1,4 @@
-		CREATE INDEX index_deputados_siglaPartido_idLegislatura 
+	CREATE INDEX index_deputados_siglaPartido_idLegislatura 
         ON deputados(siglaPartido, idLegislatura);
  
         CREATE INDEX index_deputado_orgao_id
